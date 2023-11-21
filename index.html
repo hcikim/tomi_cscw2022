@@ -1,0 +1,488 @@
+<html>
+<head>
+        <link rel="stylesheet" type="text/css" href="./style.css">
+        <link rel="stylesheet" type="text/css" href="./style2.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0,
+user-scalable=0' />
+</head>
+<body>
+    <div class="screen">
+        <div class="conversation">
+            <div class="messages messages--received">
+                <div class="message">hi</div>
+            </div>
+        </div>
+	<div id="suggestion_bar" class="suggestion">
+		<p>
+            <span id="recommendation_0" style="margin-left: 3px;
+                margin-right: 1px;
+                border: 1px solid lightcyan;
+                border-radius: 10px;
+                padding: 5px;">
+
+            </span>
+
+            <span id="recommendation_1" style="margin-left: 1px;
+                margin-right: 1px;
+                border: 1px solid lightcyan;
+                border-radius: 10px;
+                padding: 5px;">
+
+            </span>
+
+            <span id="recommendation_2" style="margin-left: 1px;
+                margin-right: 1px;
+                border: 1px solid lightcyan;
+                border-radius: 10px;
+                padding: 5px;">
+
+            </span>
+
+            <span id="recommendation_3" style="margin-left: 1px;
+                margin-right: 1px;
+                border: 1px solid lightcyan;
+                border-radius: 10px;
+                padding: 5px;">
+
+            </span>
+
+            <span id="recommendation_4" style="margin-left: 1px;
+                margin-right: 1px;
+                border: 1px solid lightcyan;
+                border-radius: 10px;
+                padding: 5px;">
+
+            </span>
+		</p>
+	</div>
+        <div class="text-bar">
+                <form class="text-bar__field" id="form-message">
+                        <input type="text" placeholder="Type here ;)" />
+                </form>
+                <div class="text-bar__refresh">
+                    <img id="Refresh_icon" src="Refresh_icon.png" alt="refresh" class="refresh">
+                </div>
+        </div>
+</div>
+<div id="id01" class="modal">
+  
+  <form class="modal-content animate">
+    <div class="imgcontainer">
+      <img src="hci_logo.png" alt="HKUST HCI" class="avatar">
+    </div>
+
+    <div class="container">
+      <label for="uname"><b>Username</b></label>
+      <input id="username" class="login" type="text" placeholder="Enter Username" name="uname" required>
+
+      <label for="psw"><b>Password</b></label>
+      <input id="password" type="password" placeholder="Enter Password" name="psw" required>
+        
+      <button id="login_button" type="button">Login</button>
+    </div>
+    <div class="container" style="background-color:#f1f1f1; text-align: center">
+      <label id="login_instruction" style="color: #ed4956"></label>
+    </div>
+  </form>
+</div>
+        <script src="/socket.io/socket.io.js"></script>
+<script>
+        var group = [
+        {
+            id: "group1",
+            participant: [
+            {
+                username: "c01_p01",
+                password: "p01"
+            },
+            {
+                username: "c01_p02",
+                password: "p02"
+            }
+        ]
+    },
+        {
+            id: "group2",
+            participant: [
+            {
+                username: "c02_p01",
+                password: "p01"
+            },
+            {
+                username: "c02_p02",
+                password: "p02"
+            }
+        ]
+    },
+        {
+            id: "group3",
+            participant: [
+            {
+                username: "c03_p01",
+                password: "p01"
+            },
+            {
+                username: "c03_p02",
+                password: "p02"
+            }
+        ]
+    }];
+
+    var current_group = "";
+    var current_participant = "";
+
+    var socket = io();
+
+    socket.on("login", function(data) {
+        console.log(data + " has joined");
+    });
+
+    blankspace = "&nbsp".repeat(10);
+
+    var r_0 = document.querySelector("#recommendation_0");
+    var r_1 = document.querySelector("#recommendation_1");
+    var r_2 = document.querySelector("#recommendation_2");
+    var r_3 = document.querySelector("#recommendation_3");
+    var r_4 = document.querySelector("#recommendation_4");
+    
+    r_0.innerHTML = blankspace;
+    r_1.innerHTML = blankspace;
+    r_2.innerHTML = blankspace;
+    r_3.innerHTML = blankspace;
+    r_4.innerHTML = blankspace;
+
+    // const { CircularArray } = require('circular-array');
+    // const buffer = new CircularArray(10);
+
+    var res;
+    var temp_msg;
+    var temp_uid;
+    
+    var buffer0;
+    var buffer1;
+    // var buffer2;
+    // var buffer3;
+    // var buffer4;
+    // var buffer5;
+    // var buffer6;
+    // var buffer7;
+    // var buffer8;
+    // var buffer9;
+    // var buffer = [];
+
+    socket.on("chat", function(data) {
+	   // console.log(data);
+        if(current_group != "" && data.group == current_group){
+            console.log(data.msg);
+            newReceivedMessage.addMessage(data.msg);
+
+            temp_msg = data.msg;
+            temp_uid = data.from.name;
+
+            var http = new XMLHttpRequest();
+            var url = 'http://10.89.126.19:5000?' + data.msg + "&" + data.from.name;
+            console.log(url);
+            http.open('GET', url, true);
+            //Send the proper header information along with the request
+            http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+            http.onreadystatechange = function() {//Call a function when the state changes.
+                if(http.readyState == 4 && http.status == 200) {
+                    // receive the result from Flask server here
+                    let result = http.responseText;
+                    // var bar = document.getElementById("suggestion_bar");
+                    res = JSON.parse(result);
+                    console.log(res);
+                    var len = Object.keys(res).length;
+
+                    var arr = []
+                    while(arr.length < 5){
+                        var r = Math.floor(Math.random() * len);
+                        if(arr.indexOf(r) === -1) arr.push(r);
+                    }
+                    console.log(arr);
+
+                    var rec_0 = document.querySelector("#recommendation_0");
+                    var rec_1 = document.querySelector("#recommendation_1");
+                    var rec_2 = document.querySelector("#recommendation_2");
+                    var rec_3 = document.querySelector("#recommendation_3");
+                    var rec_4 = document.querySelector("#recommendation_4");
+
+                    rec_0.removeAttribute('style');
+                    rec_1.removeAttribute('style');
+                    rec_2.removeAttribute('style');
+                    rec_3.removeAttribute('style');
+                    rec_4.removeAttribute('style');
+
+                    if (res[0] != " "){
+                        console.log(res[0]);
+                        rec_0.setAttribute("style", "margin-left: 1px; margin-right: 3px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_1.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_2.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_3.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_4.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+
+                        rec_0.innerText = res[arr[0]];
+                        rec_1.innerText = res[arr[1]];
+                        rec_2.innerText = res[arr[2]];
+                        rec_3.innerText = res[arr[3]];
+                        rec_4.innerText = res[arr[4]];
+                        
+                        buffer0 = data.msg;
+                        buffer1 = data.from.name;
+
+                    }
+                    else{
+                        rec_0.setAttribute("style", "margin-left: 1px; margin-right: 3px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_1.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_2.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_3.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_4.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+
+                        rec_0.innerHTML = blankspace;
+                        rec_1.innerHTML = blankspace;
+                        rec_2.innerHTML = blankspace;
+                        rec_3.innerHTML = blankspace;
+                        rec_4.innerHTML = blankspace;
+                    }
+
+                }
+                
+            }
+            http.send();
+        }
+
+    });
+
+    document.getElementById("Refresh_icon").onclick = function() {
+
+        // var check0 = document.querySelector("#recommendation_0").innerText;
+        // var check1 = document.querySelector("#recommendation_1").innerText;
+        var arr_split = temp_msg.split();
+        var length = Object.keys(arr_split).length;
+        console.log(temp_msg);
+        if(length < 3){
+            // if suggestion is empty
+
+            var http = new XMLHttpRequest();
+            var url = 'http://10.89.126.19:5000?' + buffer0 + "&" + buffer1;
+            console.log(url);
+            http.open('GET', url, true);
+            //Send the proper header information along with the request
+            http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+            http.onreadystatechange = function() {//Call a function when the state changes.
+                if(http.readyState == 4 && http.status == 200) {
+                    // receive the result from Flask server here
+                    let result = http.responseText;
+                    // var bar = document.getElementById("suggestion_bar");
+                    res = JSON.parse(result);
+                    console.log(res);
+                    var len = Object.keys(res).length;
+
+                    var arr = []
+                    while(arr.length < 5){
+                        var r = Math.floor(Math.random() * len);
+                        if(arr.indexOf(r) === -1) arr.push(r);
+                    }
+                    console.log(arr);
+
+                    var rec_0 = document.querySelector("#recommendation_0");
+                    var rec_1 = document.querySelector("#recommendation_1");
+                    var rec_2 = document.querySelector("#recommendation_2");
+                    var rec_3 = document.querySelector("#recommendation_3");
+                    var rec_4 = document.querySelector("#recommendation_4");
+
+                    rec_0.removeAttribute('style');
+                    rec_1.removeAttribute('style');
+                    rec_2.removeAttribute('style');
+                    rec_3.removeAttribute('style');
+                    rec_4.removeAttribute('style');
+
+                    if (res[0] != " "){
+                        rec_0.setAttribute("style", "margin-left: 1px; margin-right: 3px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_1.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_2.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_3.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_4.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+
+                        rec_0.innerText = res[arr[0]];
+                        rec_1.innerText = res[arr[1]];
+                        rec_2.innerText = res[arr[2]];
+                        rec_3.innerText = res[arr[3]];
+                        rec_4.innerText = res[arr[4]];
+                    }
+                    else{
+                        rec_0.setAttribute("style", "margin-left: 1px; margin-right: 3px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_1.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_2.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_3.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_4.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+
+                        rec_0.innerHTML = blankspace;
+                        rec_1.innerHTML = blankspace;
+                        rec_2.innerHTML = blankspace;
+                        rec_3.innerHTML = blankspace;
+                        rec_4.innerHTML = blankspace;
+                    }
+                    // console.log(res);
+                }
+                
+            }
+            http.send();
+
+        }
+        else{
+            // if suggestion is not empty
+            var http = new XMLHttpRequest();
+            var url = 'http://10.89.126.19:5000?' + temp_msg + "&" + temp_uid;
+            console.log(url);
+            http.open('GET', url, true);
+            //Send the proper header information along with the request
+            http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+            http.onreadystatechange = function() {//Call a function when the state changes.
+                if(http.readyState == 4 && http.status == 200) {
+                    // receive the result from Flask server here
+                    let result = http.responseText;
+                    // var bar = document.getElementById("suggestion_bar");
+                    res = JSON.parse(result);
+                    console.log(res);
+                    var len = Object.keys(res).length;
+
+                    var arr = []
+                    while(arr.length < 5){
+                        var r = Math.floor(Math.random() * len);
+                        if(arr.indexOf(r) === -1) arr.push(r);
+                    }
+                    console.log(arr);
+
+                    var rec_0 = document.querySelector("#recommendation_0");
+                    var rec_1 = document.querySelector("#recommendation_1");
+                    var rec_2 = document.querySelector("#recommendation_2");
+                    var rec_3 = document.querySelector("#recommendation_3");
+                    var rec_4 = document.querySelector("#recommendation_4");
+
+                    rec_0.removeAttribute('style');
+                    rec_1.removeAttribute('style');
+                    rec_2.removeAttribute('style');
+                    rec_3.removeAttribute('style');
+                    rec_4.removeAttribute('style');
+
+                    if (res[0] != " "){
+                        rec_0.setAttribute("style", "margin-left: 1px; margin-right: 3px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_1.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_2.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_3.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+                        rec_4.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid skyblue; border-radius: 10px; padding: 5px;");
+
+                        rec_0.innerText = res[arr[0]];
+                        rec_1.innerText = res[arr[1]];
+                        rec_2.innerText = res[arr[2]];
+                        rec_3.innerText = res[arr[3]];
+                        rec_4.innerText = res[arr[4]];
+                    }
+                    else{
+                        rec_0.setAttribute("style", "margin-left: 1px; margin-right: 3px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_1.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_2.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_3.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+                        rec_4.setAttribute("style", "margin-left: 1px; margin-right: 1px; border: 1px solid lightcyan; border-radius: 10px; padding: 5px;");
+
+                        rec_0.innerHTML = blankspace;
+                        rec_1.innerHTML = blankspace;
+                        rec_2.innerHTML = blankspace;
+                        rec_3.innerHTML = blankspace;
+                        rec_4.innerHTML = blankspace;
+                    }
+                    // console.log(res);
+                }
+                
+            }
+            http.send();
+        }
+
+        // var len = Object.keys(res).length;
+
+        // var arr = []
+        // while(arr.length < 4){
+        //     var r = Math.floor(Math.random() * len);
+        //     if(arr.indexOf(r) === -1) arr.push(r);
+        // }
+        // console.log(arr);
+        // var rec_0 = document.querySelector("#recommendation_0");
+        // var rec_1 = document.querySelector("#recommendation_1");
+        // var rec_2 = document.querySelector("#recommendation_2");
+        // var rec_3 = document.querySelector("#recommendation_3");
+
+        // rec_0.innerText = res[arr[0]];
+        // rec_1.innerText = res[arr[1]];
+        // rec_2.innerText = res[arr[2]];
+        // rec_3.innerText = res[arr[3]];
+
+    }
+
+ //    socket.on("rec", function(data) {
+	// console.log("recommendation arrived!");
+	// console.log(data);
+ //    	if(current_group != "" && data.group == current_group && data.participant == current_participant) {
+	// 	document.getElementById("recommendation").innerHTML = data.recommendation;
+	//    } else {
+	// 	console.log("This recommendation is not for you.");
+	//    }
+ //    });
+
+    function login(username, password) {
+        for(var i = 0; i < group.length; i++) {
+            for(var j = 0; j < 2; j++) {
+                if(group[i].participant[j].username == username) {
+                    if(group[i].participant[j].password == password) {
+                        console.log(group[i].participant[j].username + " entered chat #" + group[i].id);
+                        current_group = group[i].id;
+                        current_participant = group[i].participant[j].username;
+                        
+                        socket.emit("login", {
+                          name: username,
+                          userid: username
+                        });
+
+			return true;
+                    } else {
+                        console.log("You entered wrong password. Please try again.");
+                        return false;
+                    }
+                }
+            }
+        }
+        console.log("Entered username does not exist. Please try agian.");
+        return false;
+    }
+
+    function makeRandomName(){
+          var name = "";
+          var possible = "abcdefghijklmnopqrstuvwxyz";
+          for( var i = 0; i < 3; i++ ) {
+            name += possible.charAt(Math.floor(Math.random() * possible.length));
+          }
+          return name;
+    }
+
+    document.getElementById("login_button").onclick = function() {
+	if(login(document.getElementById("username").value, document.getElementById("password").value)){
+		document.getElementById("login_instruction").style.color = "#07C";
+		document.getElementById("login_instruction").innerHTML = 
+			"Successfully logged into your account!";
+		
+		setTimeout(function() { document.getElementById("id01").style.display='none'; }, 500);
+
+	} else {
+		document.getElementById("login_instruction").innerHTML = 
+			"Sorry, your password was incorrect. Please double-check your password.";
+	}
+    }
+</script>
+<script src="script.js"></script>
+</body>
+</html>
